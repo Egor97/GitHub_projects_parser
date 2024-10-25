@@ -1,10 +1,10 @@
 version: "3.9"
 services:
   app:
-    container_name: GitHub_projects_parser
+    container_name: gitHub_parser -> change_this
     image: api_github_parser:latest
     env_file:
-      - .myenv
+      - .change_this
     ports:
       - "8000:80"
     networks:
@@ -44,9 +44,9 @@ services:
       - "-c"
       - "pg_stat_statements.track=all"
     environment:
-      POSTGRES_DB: "test_db"
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: change_this
+      POSTGRES_USER: change_this
+      POSTGRES_PASSWORD: change_this
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
