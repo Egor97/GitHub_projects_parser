@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from asyncpg import Pool, Record
+from asyncpg import Record, Connection
 from fastapi import Depends
 
 from app.database import DatabaseDep
@@ -9,8 +9,8 @@ from app.utils import SortDep, OrderDep
 
 
 class Repository:
-    def __init__(self, pool: Pool):
-        self.pool = pool
+    def __init__(self, session):
+        self.session: Connection = session
 
     async def get_repositories(self, sorted_fields: SortDep, order: OrderDep) -> list[Record]:
         fields = ', '.join([field.name for field in sorted_fields])
@@ -18,12 +18,10 @@ class Repository:
         query = f"SELECT repo, owner, position_cur, position_prev, stars,watchers, " \
                 f"forks, open_issues, language FROM repo ORDER BY {fields} {order.value};"
 
-        async with self.pool.acquire() as session:
-            return await session.fetch(query)
+        return await self.session.fetch(query)
 
     async def check_repo_name(self, repo_name) -> bool:
-        async with self.pool.acquire() as session:
-            res = await session.fetchrow('SELECT EXISTS (SELECT repo FROM activity WHERE repo = $1)', repo_name)
+        res = await self.session.fetchrow('SELECT EXISTS (SELECT repo FROM activity WHERE repo = $1)', repo_name)
         return res['exists']
 
     async def get_repository_activity(self, name: str, since: date, until: date) -> list[Record]:
@@ -43,8 +41,7 @@ class Repository:
                     f"AND date <= $2 ORDER BY date DESC"
             query_params.append(until)
 
-        async with self.pool.acquire() as session:
-            return await session.fetch(query, *query_params)
+        return await self.session.fetch(query, *query_params)
 
 
 async def get_repository(pool: DatabaseDep) -> Repository:
