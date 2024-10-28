@@ -18,6 +18,11 @@ def startup():
     basicConfig(level='DEBUG', format=x_format, handlers=[console_handler])
 
 
+@app.on_event('shutdown')
+def shutdown():
+    pass
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
