@@ -56,4 +56,8 @@ async def get_repo_activity(service: ServiceDep, owner: str, repo: str, since: d
         if since > until:
             raise HTTPException(status_code=400, detail="Некорректно заданы даты поиска")
 
-    return await service.get_repo_activity(repo_name, since, until)
+    try:
+        return await service.get_repo_activity(repo_name, since, until)
+    except Exception as ex:
+        logger.exception(ex)
+        raise ex
